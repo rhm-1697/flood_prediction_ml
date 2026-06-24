@@ -1,0 +1,12 @@
+<PAMDataset>
+  <Array name="Sliced view of /RAINFALL ([0])">
+    <Statistics>
+      <ApproxStats>1</ApproxStats>
+      <Minimum>0</Minimum>
+      <Maximum>6.70225954055786133</Maximum>
+      <Mean>0.00632178462969738408</Mean>
+      <StdDev>0.142236545200063874</StdDev>
+      <ValidSampleCount>4964</ValidSampleCount>
+    </Statistics>
+  </Array>
+</PAMDataset>
