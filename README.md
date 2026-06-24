@@ -30,31 +30,31 @@ Ernakulam and Idukki districts, Kerala, India — two of the worst-affected area
 |---------|--------|
 | Mean / min / max elevation | SRTM DEM |
 | Mean / min / max slope | Derived from DEM in ArcGIS Pro |
-| Mean / min / max precipitation | Precipitation raster |
-| Imperviousness | Land cover raster |
-| Distance to drainage | OSM drainage network (Near tool) |
+| Mean / min / max precipitation | CHIRPS (Climate Hazards InfraRed Precipitation with Station data) |
+| Imperviousness | Global impervious surface raster (Tsinghua University, via GEE) |
+| Distance to drainage | OSM drainage network (Near tool, ArcGIS Pro) |
 
 ---
 
 ## Methods
 
 ### Feature Engineering
-- Sentinel-1 SAR GRD imagery processed in ESA SNAP to identify water pixels
-- Zonal statistics applied to each road segment to extract feature values and determine flood labelling
+- Sentinel-1 SAR GRD imagery (21 August 2018) processed in ESA SNAP using global thresholding to identify water pixels
+- Zonal statistics applied to each road segment in ArcGIS Pro to extract feature values and determine flood labelling
 - Coordinate system transformations and attribute-level QA performed in ArcGIS Pro
 
 ### Class Imbalance
-- SMOTE (Synthetic Minority Over-sampling Technique) applied to balance the training set without discarding majority class data
+- SMOTE (Synthetic Minority Over-sampling Technique) applied to the training set to balance classes without discarding majority class data
 
 ### Feature Selection
-- Recursive Feature Elimination (RFE) via scikit-learn
-- Logistic regression p-value analysis via statsmodels
-- Five significant predictors identified: mean slope, mean precipitation, imperviousness, minimum slope, maximum slope
+- Two methods used in combination: Recursive Feature Elimination (RFE) via scikit-learn, and logistic regression p-value analysis via statsmodels
+- RFE identified five significant predictors: mean slope, mean precipitation, imperviousness, min slope, max slope
+- Combined with statsmodels results, the final feature set used to train the model was: mean slope, mean precipitation, imperviousness, min slope, max slope, min elevation, and distance to drainage
 
 ### Model
 - Logistic regression (binary classification: flooded / not flooded)
-- 70/30 train-test split on SMOTE-balanced data
-- k-fold cross-validation (k=10)
+- 70/30 train-test split; SMOTE applied to training set only; test set uses original unbalanced data
+- k-fold cross-validation for generalisation assessment
 
 ---
 
@@ -66,15 +66,14 @@ Ernakulam and Idukki districts, Kerala, India — two of the worst-affected area
 | AUC (ROC curve) | 0.74 |
 | k-fold cross-validation score | 0.7367 ± 0.0046 |
 
-Key finding: higher imperviousness and lower minimum elevation are the strongest predictors of flood risk, consistent with the role of urbanisation in reducing infiltration capacity.
-
 ---
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `flood_prediction.ipynb` | Full Jupyter notebook: data preparation, SMOTE, feature selection, model training and validation |
+| `Logistic_regression_classifier_code.ipynb` | Full Jupyter notebook: data preparation, SMOTE, feature selection, model training and validation |
+| `flood_risk_dissertation.pdf` | Full MSc dissertation |
 
 ---
 
@@ -97,11 +96,10 @@ import statsmodels.api as sm
 ## Data Sources
 
 - Sentinel-1 SAR GRD imagery — Copernicus Open Access Hub
-- SRTM DEM — NASA / USGS
-- Road network — OpenStreetMap
-- Precipitation data — IMD / ERA5
-- Imperviousness — Copernicus Global Land Service
-
+- SRTM DEM — NASA / USGS (via OpenTopography)
+- Road and drainage network — OpenStreetMap (via Geofabrik)
+- Precipitation data — CHIRPS (Funk et al., 2015)
+- Imperviousness — Global impervious surface dataset, Tsinghua University (Gong et al., 2020), accessed via Google Earth Engine
 
 ---
 
@@ -110,3 +108,4 @@ import statsmodels.api as sm
 - Logistic regression assumes a linear relationship between features and flood probability; nonlinear models (Random Forest, XGBoost) may improve performance
 - Model trained and validated on a single flood event; generalisation to other events or geographies requires further testing
 - Imperviousness and drainage data may not reflect conditions at the time of the 2018 event
+- CHIRPS precipitation resolution (~6 km) is coarser than the road segment scale, which limits spatial precision of the precipitation feature
